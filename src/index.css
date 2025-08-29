@@ -99,6 +99,52 @@ body {
   backdrop-filter: blur(5px);
 }
 
+/* Markdown content styling */
+.chat-bubble h1,
+.chat-bubble h2,
+.chat-bubble h3,
+.chat-bubble h4,
+.chat-bubble h5,
+.chat-bubble h6 {
+  margin: 0.5rem 0;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.chat-bubble h3 {
+  font-size: 1.1rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.chat-bubble p {
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+.chat-bubble ul,
+.chat-bubble ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.chat-bubble li {
+  margin: 0.3rem 0;
+  line-height: 1.4;
+  padding-left: 0.5rem;
+}
+
+.chat-bubble strong {
+  font-weight: 600;
+}
+
+.chat-bubble blockquote {
+  margin: 0.5rem 0;
+  padding-left: 1rem;
+  border-left: 3px solid #ccc;
+  font-style: italic;
+}
+
 /* Input bar */
 .chat-input {
   display: flex;
