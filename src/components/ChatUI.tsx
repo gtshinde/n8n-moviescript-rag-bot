@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 
@@ -18,6 +18,15 @@ export default function ChatUI() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, loading]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -76,6 +85,7 @@ export default function ChatUI() {
             <img id="loading-gif" src="/BeeMovie_GIF1.gif" alt="loading" />
           </motion.div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="chat-input">
