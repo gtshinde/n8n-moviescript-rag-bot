@@ -10,9 +10,11 @@ type Message = {
 
 export default function ChatUI() {
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "Hey, how are you doing today?", sender: "incoming" },
-    { id: 2, text: "I’m doing great, thanks! Working on the new design.", sender: "outgoing" },
-    { id: 3, text: "That’s awesome. Can’t wait to see it!", sender: "incoming" },
+    { id: 1, text: "Hey, how is it going! Got any questions about the movie? Ask away!", sender: "incoming" },
+    // { id: 2, text: "Why is Barry so dissatisfied with the hive life?", sender: "outgoing" },
+    // { id: 3, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", sender: "incoming" },
+    // { id: 4, text: "Why is Barry so dissatisfied with the hive life?", sender: "outgoing" },
+
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -44,10 +46,8 @@ export default function ChatUI() {
   return (
     <div className="chat-container">
       <div className="chat-background">
-        {loading ? (
-          <img id="loading_gif" src="/BeeMovie_GIF1.gif" alt="loading background" />
-        ) : (
-          <img
+        {!loading && (
+            <img
             src="https://i.pinimg.com/1200x/30/5b/5e/305b5e3a74505b9d661df621ebfb72d7.jpg"
             alt="background"
           />
@@ -61,12 +61,21 @@ export default function ChatUI() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className={`chat-bubble ${msg.sender}`}
+            className={`chat-bubble ${msg.sender} ${loading ? 'blurred' : ''}`}
           >
             {msg.text}
           </motion.div>
         ))}
-        {/* No separate loading bubble; GIF is shown as background while loading */}
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="loading-message"
+          >
+            <img id="loading-gif" src="/BeeMovie_GIF1.gif" alt="loading" />
+          </motion.div>
+        )}
       </div>
 
       <div className="chat-input">

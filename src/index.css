@@ -53,11 +53,10 @@ body {
   left: 5rem;
 }
 
-#loading_gif{
-  left: 0rem;
-  top: 5rem;
+#loading-gif{
   width: 45%;
   height: 45%;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
 }
 
 /* Messages */
@@ -67,6 +66,7 @@ body {
   padding: 2.5rem;
   position: relative;
   z-index: 10;
+  transition: filter 0.3s ease;
 }
 
 .chat-bubble {
@@ -75,6 +75,13 @@ body {
   margin-bottom: 1.5rem;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.chat-bubble.blurred {
+  filter: blur(2px);
+  opacity: 0.6;
+  transform: scale(0.98);
 }
 
 .chat-bubble.incoming {
@@ -102,6 +109,12 @@ body {
   position: relative;
   z-index: 10;
   backdrop-filter: blur(5px);
+}
+
+.loading-message {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
 }
 
 .chat-input input {
