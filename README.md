@@ -68,12 +68,18 @@ npm run preview
 ## 📁 Project Structure
 
 ```
-src/
-├── components/
-│   └── ChatUI.tsx      # Main chat interface component
-├── App.tsx             # Root application component
-├── main.tsx            # Application entry point
-└── index.css           # Global styles
+├── src/
+│   ├── components/
+│   │   └── ChatUI.tsx      # Main chat interface component
+│   ├── App.tsx             # Root application component
+│   ├── main.tsx            # Application entry point
+│   └── index.css           # Global styles
+├── n8n/
+│   ├── Retrieval_main.json     # Main RAG retrieval workflow
+│   ├── Temporal-Retrieval.json # Temporal context workflow
+│   └── Insertion_v3_large_embeddings.json # Embedding generation workflow
+├── public/               # Static assets
+└── dist/                # Production build output
 ```
 
 ## 🔧 Available Scripts
