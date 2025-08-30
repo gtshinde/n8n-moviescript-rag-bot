@@ -1,69 +1,105 @@
-# React + TypeScript + Vite
+# 🐝 Bee Movie RAG Chatbot
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React-based chatbot that answers questions about "The Bee Movie" using RAG (Retrieval-Augmented Generation) technology. The chatbot features a beautiful glassmorphic UI with smooth animations and connects to an n8n workflow for intelligent responses.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **RAG-powered responses** - Get accurate answers about The Bee Movie
+- **Glassmorphic UI** - Modern, translucent design with smooth animations
+- **Real-time chat** - Interactive conversation interface
+- **Markdown support** - Rich text formatting for responses
+- **Responsive design** - Works on desktop and mobile devices
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Frontend
+- **React 19** - Modern React with latest features
+- **TypeScript** - Type-safe development
+- **Vite** - Fast build tool and dev server
+- **Framer Motion** - Smooth animations and transitions
+- **Lucide React** - Beautiful icons
+- **React Markdown** - Markdown rendering
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Backend & AI
+- **n8n** - Workflow automation and RAG processing
+- **RAG (Retrieval-Augmented Generation)** - AI-powered question answering
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+## 📋 Prerequisites
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js (v18 or higher)
+- npm or yarn
+- n8n instance running with your RAG workflow
+
+## 🚀 Getting Started
+
+1. **Clone the repository**
+   ```bash
+   git clone n8n-moviescript-rag-bot
+   cd n8n-moviescript-rag-bot
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   Create a `.env` file in the root directory:
+   ```env
+   VITE_N8N_TEST_URL=your_n8n_workflow_url_here
+   VITE_N8N_PROD_URL=your_n8n_workflow_url_here
+   ```
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+   Navigate to `http://localhost:5173`
+
+## 🏗️ Build for Production
+
+```bash
+npm run build
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 📁 Project Structure
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+├── components/
+│   └── ChatUI.tsx      # Main chat interface component
+├── App.tsx             # Root application component
+├── main.tsx            # Application entry point
+└── index.css           # Global styles
+```
+
+## 🔧 Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## 🌟 How It Works
+
+The chatbot connects to an n8n workflow that processes user queries using RAG technology. When you ask a question about The Bee Movie, the system:
+
+1. Sends your query to the n8n workflow
+2. The workflow retrieves relevant information from the movie database
+3. Generates an intelligent response using AI
+4. Returns the answer to display in the chat interface
+
+## 🎨 UI Features
+
+- **Glassmorphic design** - Translucent, modern interface
+- **Smooth animations** - Framer Motion-powered transitions
+- **Loading states** - Bee Movie GIF during processing
+- **Responsive layout** - Adapts to different screen sizes
+- **Markdown rendering** - Rich text formatting support
+
+## 🤝 Contributing
+
+Feel free to submit issues and enhancement requests!
