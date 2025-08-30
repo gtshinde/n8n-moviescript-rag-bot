@@ -1,0 +1,241 @@
+{
+  "name": "Temporal-Retrieval",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "documents_v3_large",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.primary_id_1 }}"
+            },
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.primary_id_2 }}"
+            },
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.primary_id_3 }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "cd21593d-217c-4490-a27f-eb0387da11ff",
+      "name": "Get many rows",
+      "credentials": {
+        "supabaseApi": {
+          "id": "bB4rSgY9qnrywhtH",
+          "name": "Supabase account 6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -176,
+        0
+      ],
+      "id": "df82e8f5-43fa-4528-8516-f0e67534750b",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Initialize secondary IDs with the same value as the primary_id\nlet primary_id_2 = $input.first().json.output.primary_id;\nlet primary_id_3 = $input.first().json.output.primary_id;\n\n// Check the query type and adjust secondary IDs accordingly\nif ($input.first().json.output.query_type === \"temporal-before\") {\n  // If query asks for \"before\", fetch the ID just before the primary\n  primary_id_2 = $input.first().json.output.primary_id - 1;\n\n} else if ($input.first().json.output.query_type === \"temporal-after\") {\n  // If query asks for \"after\", fetch the ID just after the primary\n  primary_id_2 = $input.first().json.output.primary_id + 1;\n\n} else {\n  // If query type is neither, fetch both before and after IDs\n  primary_id_2 = $input.first().json.output.primary_id - 1;\n  primary_id_3 = $input.first().json.output.primary_id + 1;\n}\n\n// Return the primary ID along with the computed secondary IDs\nreturn {\n  \"primary_id_1\": $input.first().json.output.primary_id,  // The original primary ID\n  \"primary_id_2\": primary_id_2,                           // Either before/after ID (or both)\n  \"primary_id_3\": primary_id_3                            // Only populated if \"else\" case\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        0
+      ],
+      "id": "2bde2deb-55b4-46e8-ae14-f7b3b7a5b4b4",
+      "name": "Prep For Supabase"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User Query -  {{ $('When Executed by Another Workflow').item.json.output.userQuery }}\n\nList Of Content - {{ $json.data.toJsonString() }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=# Role\n<role>\nYour role is to provide accurate answer to user query based on the list of content provided to you. The content might have a small overlap. Select and use only the portions that are **most relevant** to the user’s query. \n</role>\n\n## Guardrails\n\n- Do not use your own knowledge, use only the content provided.\n- If the content gets cut off, do not mention it to the user.\n\n- **Precision with Temporal Queries**:  \n  - If the query involves words like *before, after, around, start, begin, end*, focus strictly on the event mentioned in the query.  \n  - Do not expand the scope to nearby or adjacent events unless they are explicitly relevant.  \n  - Never blend unrelated phrases (e.g., avoid outputs like *“before and through graduation”* if the query only asked about *“before graduation”*).  \n\n## Output Rules\n\n- **Markdown Formatting Requirement**:  \n   - The entire `text` field must always be valid Markdown.  \n   - Use paragraphs, headings, emphasis, bullet points, and blockquotes appropriately.  \n   - Never return raw plain text or HTML.\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        864,
+        0
+      ],
+      "id": "4faa77af-6817-4fa4-bddf-227e33aeebf5",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "include": "specifiedFields",
+        "fieldsToInclude": "content",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        640,
+        0
+      ],
+      "id": "a48f9acc-a109-4495-a489-b18bc1c0cdc9",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "7faef691-6f06-4203-a4bb-c07684cd5417",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        208
+      ],
+      "id": "43d68611-d45d-4460-b9c6-efe72cdd3633",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "DGjV2G4X3gk40qim",
+          "name": "OpenAi account 7"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Prep For Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep For Supabase": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6716a5bc-7210-49ab-99f0-828146d51e14",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f0fc7dab00cade0db864c7b325e12f7997287a868429bd9e02881780c4c35ff8"
+  },
+  "id": "J0t5TcgRLRI0TIgC",
+  "tags": [
+    {
+      "createdAt": "2025-08-26T02:53:40.200Z",
+      "updatedAt": "2025-08-26T02:53:40.200Z",
+      "id": "TrcVZeSizHPbmR2B",
+      "name": "large-embedding"
+    }
+  ]
+}

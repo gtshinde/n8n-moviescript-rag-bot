@@ -1,0 +1,745 @@
+{
+  "name": "Retrieval_main",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1104,
+        -64
+      ],
+      "id": "4700b61a-f4eb-4cdd-9457-3dbaff209f1d",
+      "name": "When chat message received",
+      "webhookId": "69d00524-0e3e-4735-a6d5-b9630fc66eca"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User Query - {{ $('Basic LLM Chain').item.json.text }}\nList of Chunks -\n{{ $json.data.toJsonString() }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=## Role\n<role>\nYou are a **RAG Agent**.  \nYour task is to **answer user questions ONLY using the chunks provided to you as input.**\n\n- The input is a list of text chunks (from the Bee Movie script) with metadata and relevance scores.  \n- You must rely solely on these chunks. You must not use any outside knowledge.  \n</role>\n\n---\n\n## Answering Rules\n1. **Use Provided Chunks Only**:  \n   - Only form answers from the list of chunks passed into you.  \n   - Always retrieve the `row_id` of the chunk(s) from which you pulled the answer but do not mention the ids in the displayed `text`.  \n   - Never use your own training knowledge or assumptions.  \n\n1.1 **Answer First, Evidence After (in the same text field)**:  \n   - Always provide a **direct, self-contained answer first**, written in **Markdown**. You do not have to explicitly call it \"Answer\"; it is implied.  \n   - After the main answer, add a separate section titled `### Supporting Evidence` **inside the same Markdown field**.  \n   - List only the **relevant lines/excerpts** as bullet points.  \n   - Do not output a separate JSON key for evidence.  \n\n2. **Answer Using Context Only**:  \n   - If no valid chunk above the threshold contains the answer, respond:  \n     `\"The context I have does not contain enough information to answer your question.\"`  \n\n3. **No Hallucination**:  \n   - Do not invent, speculate, or add outside information.  \n   - Do not merge unrelated details. Keep the response faithful to the given input.  \n\n4. **Character Relationships**:  \n   - If the user asks about relationships (friendship, family, romance, conflict, etc.), examine the given chunks for **evidence of interactions, dialogue tone, and context**.  \n   - In your answer, summarize the relationship. In the `### Supporting Evidence` section, show the specific lines that back up your conclusion.  \n\n5. **Markdown Formatting Requirement**:  \n   - The entire `text` field must always be valid Markdown.  \n   - Use paragraphs, headings, emphasis, bullet points, and blockquotes appropriately.  \n   - Never return raw plain text or HTML.  \n\n## Guardrails\n- **Domain Restriction**: Only answer questions that are directly related to the Bee Movie script.  \n  - If the user asks about unrelated topics (e.g., real-world facts, other movies, personal advice), respond with:  \n    `\"I can only answer questions about the Bee Movie script based on the context provided.\"`  \n- **No External Knowledge**: You are forbidden from using your own model knowledge, prior training, or facts not contained in the input.  \n- **No Fabrication**: If the answer cannot be found in input chunks, explicitly respond that the context does not provide enough information.  \n- **Consistency**: Never contradict retrieved context. If chunks conflict, state the conflict without trying to resolve it on your own.  \n- **Transparency**: If the retrieved chunks are incomplete, mention this limitation clearly.  \n\n---\n## Example Output\n\n```json\n{\n  \"text\": \"Barry is dissatisfied because he no longer. xyz xyz \\n\\n### Supporting Evidence\\n- “I wanted to do it really well. And now... And now I can’t.”\\n- “Humans have no right to our hard-earned honey.”\",\n  \"primary_row_id\": 9,\n  \"supporting_row_ids\": [1, 2]\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        -64
+      ],
+      "id": "d2020a49-76ab-464c-a097-b94effd9d203",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        144
+      ],
+      "id": "40353408-83a7-4af5-9eb8-4ed4456f2ebc",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "DGjV2G4X3gk40qim",
+          "name": "OpenAi account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.headers[\"x-real-ip\"] }}",
+        "contextWindowLength": 3
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        512
+      ],
+      "id": "bffb9f83-7eaf-49e3-b8d5-66d18c06cf16",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "tableName": {
+          "__rl": true,
+          "value": "documents_v3_large",
+          "mode": "list",
+          "cachedResultName": "documents_v3_large"
+        },
+        "prompt": "={{ $json.text }}\n",
+        "useReranker": true,
+        "options": {
+          "queryName": "match_documents_v3_large"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -528,
+        -64
+      ],
+      "id": "7e5849ba-d056-48a3-8f8f-a68f71330b3f",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "bB4rSgY9qnrywhtH",
+          "name": "Supabase account 6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 3072
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -608,
+        144
+      ],
+      "id": "0c22d2a1-2097-44f9-ad5c-92d9fcb65916",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "DGjV2G4X3gk40qim",
+          "name": "OpenAi account 7"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        144
+      ],
+      "id": "9403e18d-5621-4406-89b3-de5fda5ab1a6",
+      "name": "Reranker Cohere1",
+      "credentials": {
+        "cohereApi": {
+          "id": "BscuG9q3m6Pve6et",
+          "name": "CohereApi account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items\nconst allItems = $input.all();\n\n// Filter items with score >= 0.50\nlet results = allItems.filter(item => {\n  const score = item.json.score;\n  return score !== undefined && score >= 0.50;\n});\n\n// If no items meet the threshold, fallback to the first item\nif (results.length === 0 && allItems.length > 0) {\n  results = [allItems[0]];\n}\n\n// Sort results by descending score\nresults.sort((a, b) => (b.json.score || 0) - (a.json.score || 0));\n\n// Return the filtered (and sorted) items\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        -64
+      ],
+      "id": "5d0add65-c4d1-49b4-843b-a378fe78de1c",
+      "name": "RelevanceScore_Filtering"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -64
+      ],
+      "id": "e7641cef-f948-4369-861d-ae307996b6cd",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        992,
+        288
+      ],
+      "id": "23814ee5-271d-41a1-b385-23a9f460e398",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "DGjV2G4X3gk40qim",
+          "name": "OpenAi account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"text\": \"Barry is dissatisfied because he no longer. xyz xyz \\n\\n### Supporting Evidence\\n- “I wanted to do it really well. And now... And now I can’t.”\\n- “Humans have no right to our hard-earned honey.”\",\n  \"primary_row_id\": 9,\n  \"supporting_row_ids\": [1, 2]\n}",
+        "autoFix": true,
+        "customizeRetryPrompt": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        736,
+        128
+      ],
+      "id": "58814ce1-4ef7-487b-9d62-01301ad70a90",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"query_type\": \"temporal-before\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1152,
+        144
+      ],
+      "id": "296ec3c4-f5ff-4097-b288-154ccc8483cb",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e490f029-74ee-431e-b656-ff57907b8c72",
+              "leftValue": "={{ $json.output.query_type }}",
+              "rightValue": "semantic",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        -64
+      ],
+      "id": "648ef28a-a116-41b9-a752-1ec1d9e0a048",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "nvJ4t1EimMtvypxn",
+          "mode": "list",
+          "cachedResultName": "TH Cohort - Gautami Shinde — Temporal-Retrieval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1808,
+        48
+      ],
+      "id": "ee322812-31c3-4193-a956-b37193da62a6",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Want to also pass the user query to the sub-workflow along with the other required fields:\n\n// $input.first().json.output.userQuery = $('When chat message received').first().json.chatInput;\n$input.first().json.output.userQuery = $('Webhook').first().json.body.userQuery;\n$input.first().json.output.primary_id = $('AI Agent').first().json.output.primary_row_id\n// Sample output:\n// [\n//   {\n//     \"output\": {\n//       \"query_type\": \"temporal-after\",\n//       \"primary_id\": 9,\n//       \"userQuery\": \"what happens after barry leaves the hive with the pollen jocks?\"\n//     }\n//   }\n// ]\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        48
+      ],
+      "id": "584b8e0b-8ce8-4659-b95f-59f4e68c5468",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook').item.json.body.userQuery }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a text classifier.  \nClassify each user question into ONE of the following categories:  \n\n- temporal-before → asks what happens **before** an event  \n- temporal-after → asks what happens **after, following, or leading from** an event  \n- temporal-around → asks what happens **around, during, at the time of, at the start, or at the end of** an event  \n- semantic → asks about facts, reasons, relationships, or meaning (not tied to a timeline or temporal reference)  \n\nOutput only the category name.  \n\n### Examples\n- \"What happens prior to Barry choosing his job?\" → temporal-before  \n- \"What events lead to Barry meeting Vanessa?\" → temporal-before  \n\n- \"What follows the bees winning the court case?\" → temporal-after  \n- \"What does Barry do once he graduates?\" → temporal-after  \n\n- \"What happens around the courtroom trial?\" → temporal-around   \n\n- \"What relationship forms between Barry and Vanessa?\" → semantic  \n- \"What message does the movie give about purpose and work?\" → semantic  "
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        992,
+        -64
+      ],
+      "id": "82e6b357-6775-4af7-b6f6-2d9958b96449",
+      "name": "Classifier"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.userQuery }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a query rewriter.  \nYour task is to remove any **temporal words or phrases** from the user query while keeping the rest of the meaning intact.  \n\nTemporal words/phrases include:  \n- before, after, prior, earlier, later  \n- start, begin, beginning, first, initial  \n- end, ending, final, last, closing  \n- around, during, at the time of  \n\n### Rules\n- If the query contains temporal words, strip them out and return only the **core event or entity**.  \n- If the query does **not** contain temporal words, return it exactly as it is.  \n- Do not add or invent anything.  \n- Output only the cleaned query, nothing else.  \n\n### Examples\n- Input: `What happens before Barry graduates from bee college?`  \n  Output: `Barry graduates from bee college`  \n\n- Input: `What happens around the big plane sequence?`  \n  Output: `the big plane sequence`  \n\n- Input: `What job options are available for bees in the hive?`  \n  Output: `What job options are available for bees in the hive?`  \n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -880,
+        -64
+      ],
+      "id": "99cc2e93-473d-42a7-8056-6b2c8f793311",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -960,
+        144
+      ],
+      "id": "6a6556f3-1f4f-40dc-a8bd-954f13112ae5",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "DGjV2G4X3gk40qim",
+          "name": "OpenAi account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Add a loop to run max 3 times till it finds atleast 1 item with relevance > 0.50. \n\nEg: Barry dream -> no records above 0.50 -> send to llm to give a different similar query -> send to supabase again via loop to retrieve"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -288,
+        272
+      ],
+      "typeVersion": 1,
+      "id": "fb395cd6-033d-498a-879c-c865c87dc798",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "9afd0963-0386-4326-9a36-77bc9c9e68be",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1248,
+        112
+      ],
+      "id": "83430e6a-ebe5-4658-b89f-f062e20dab94",
+      "name": "Webhook",
+      "webhookId": "9afd0963-0386-4326-9a36-77bc9c9e68be"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\"text\": $('AI Agent').item.json.output.text} }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2064,
+        -80
+      ],
+      "id": "dd7db5ed-5632-420d-9ef2-65951ba31466",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2096,
+        112
+      ],
+      "id": "86e4ee1e-4caf-4642-ad20-0c477e32d0f9",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "mode": "delete",
+        "deleteMode": "all"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        1424,
+        960
+      ],
+      "id": "3e1e0ca7-b9c7-4f6f-b24d-0299aee94043",
+      "name": "Chat Memory Manager"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "715005844"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1392,
+        1120
+      ],
+      "id": "4e595259-21a8-4afe-9c4d-4c6e7220c6b6",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        944
+      ],
+      "id": "71a76267-f5af-40a8-8e34-488bc880ec7e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "content": "To Clear the Buffer Memmory",
+        "height": 336,
+        "width": 800,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1024,
+        912
+      ],
+      "typeVersion": 1,
+      "id": "50642f40-8ff0-49a5-8268-7634ef2c6c11",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere1": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "main": [
+        [
+          {
+            "node": "RelevanceScore_Filtering",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RelevanceScore_Filtering": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Classifier",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classifier": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Chat Memory Manager",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Chat Memory Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "699dde96-9fae-4595-a8b8-67d774640036",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f0fc7dab00cade0db864c7b325e12f7997287a868429bd9e02881780c4c35ff8"
+  },
+  "id": "nzs2Jge8l5g2zmWU",
+  "tags": [
+    {
+      "createdAt": "2025-08-26T02:53:40.200Z",
+      "updatedAt": "2025-08-26T02:53:40.200Z",
+      "id": "TrcVZeSizHPbmR2B",
+      "name": "large-embedding"
+    }
+  ]
+}
