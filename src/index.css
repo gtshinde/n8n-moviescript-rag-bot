@@ -85,7 +85,7 @@ body {
 }
 
 .chat-bubble.incoming {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.8);
   color: #333;
   border: 1px solid #ccc;
   backdrop-filter: blur(3px);
